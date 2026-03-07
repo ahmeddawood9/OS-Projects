@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Monitor</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 30px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    .dashboard {
+      width: 90%;
+      max-width: 1000px;
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, background 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .metric {
+      font-size: 32px;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #00ffcc; /* Default Cyan */
+      transition: color 0.5s ease;
+    }
+
+    .label {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.8;
+    }
+
+    .chart-container {
+      width: 90%;
+      max-width: 1000px;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⚡ System Monitoring Dashboard</h1>
+
+  <div class="dashboard">
+    <div class="card">
+      <div class="label">CPU Usage</div>
+      <div class="metric" id="cpu">--%</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Memory Usage</div>
+      <div class="metric" id="memory">--%</div>
+    </div>
+
+    <div class="card">
+      <div class="label">System Load</div>
+      <div class="metric" id="load">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Disk Usage</div>
+      <div class="metric" id="disk">--%</div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="cpuChart"></canvas>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('cpuChart').getContext('2d');
+
+    // Color helper function
+    function getMetricColor(value) {
+      if (value > 85) return '#ff4d4d'; // Red
+      if (value > 60) return '#ffaa00'; // Orange
+      return '#00ffcc'; // Cyan
+    }
+
+    const cpuChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'CPU Usage %',
+          data: [],
+          borderColor: '#00ffcc',
+          backgroundColor: 'rgba(0,255,204,0.1)',
+          borderWidth: 2,
+          pointRadius: 3,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 800 },
+        scales: {
+          y: { 
+            min: 0, 
+            max: 100,
+            grid: { color: 'rgba(255,255,255,0.1)' },
+            ticks: { color: 'white' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: 'white' }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: 'white' } }
+        }
+      }
+    });
+
+    async function loadData() {
+      try {
+        // Prevent browser caching by adding a timestamp to the URL
+        const response = await fetch('data.json?t=' + new Date().getTime());
+        const data = await response.json();
+
+        // Update Text and Colors
+        const cpuElem = document.getElementById('cpu');
+        const memElem = document.getElementById('memory');
+        
+        cpuElem.innerText = data.cpu + "%";
+        cpuElem.style.color = getMetricColor(data.cpu);
+
+        memElem.innerText = data.memory + "%";
+        memElem.style.color = getMetricColor(data.memory);
+
+        document.getElementById('load').innerText = data.load;
+        document.getElementById('disk').innerText = data.disk + "%";
+
+        // Update Chart
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        // Only push if the timestamp is different from the last label
+        if (cpuChart.data.labels[cpuChart.data.labels.length - 1] !== now) {
+            cpuChart.data.labels.push(now);
+            cpuChart.data.datasets[0].data.push(data.cpu);
+
+            if (cpuChart.data.labels.length > 20) {
+              cpuChart.data.labels.shift();
+              cpuChart.data.datasets[0].data.shift();
+            }
+            cpuChart.update();
+        }
+
+      } catch (error) {
+        console.error("Dashboard Sync Error:", error);
+      }
+    }
+
+    // Initial load
+    loadData();
+
+    // Set interval to 10 seconds to catch the cron update quickly 
+    // without hammering the CPU too hard.
+    setInterval(loadData, 10000);
+  </script>
+
+</body>
+</html>
