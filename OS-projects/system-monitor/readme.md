@@ -1,1 +1,0 @@
-A lightweight, dependency-free Linux system monitor. It uses a Bash collector to read raw hardware metrics directly from the `/proc` virtual filesystem and serializes the data into JSON for a real-time, asynchronous Chart.js web dashboard.
