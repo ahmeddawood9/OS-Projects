@@ -1,0 +1,10 @@
+# OSTEP Test outputs
+tests-out/
+
+# Compiled C binaries (targeting the specific files, not the folders)
+initial-utilities/wcat/wcat
+initial-utilities/wgrep/wgrep
+initial-utilities/wunzip/wunzip
+
+# System monitor logs (if your collector.sh generates any)
+*.log
