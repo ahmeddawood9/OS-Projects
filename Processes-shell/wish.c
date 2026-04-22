@@ -44,6 +44,19 @@ int main(int argc, char *argv[]) {
             print_error(); exit(1);
         } else { wait(NULL); }
         free(args);
+
+        if (strcmp(args[0], "cd") == 0) {
+            if (args[1] == NULL || args[2] != NULL) print_error();
+            else if (chdir(args[1]) != 0) print_error();
+            continue;
+        }
+        if (strcmp(args[0], "path") == 0) {
+            // Free old path and update with new args[1...n]
+            // ... logic to update shell_path array ...
+            continue;
+        }
+
+
     }
     return 0;
 }
