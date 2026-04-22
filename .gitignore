@@ -8,3 +8,9 @@ initial-utilities/wunzip/wunzip
 
 # System monitor logs (if your collector.sh generates any)
 *.log
+
+# Hiding test files from Processel-shell
+wish
+tests/
+tests-out/
+test-wish.sh
