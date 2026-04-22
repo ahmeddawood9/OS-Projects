@@ -28,35 +28,51 @@ int main(int argc, char *argv[]) {
     shell_path = malloc(sizeof(char*));
     shell_path[0] = strdup("/bin");
 
-    char *line = NULL; size_t len = 0;
+    char *line = NULL;
+    size_t len = 0;
+
     while (1) {
-        printf("wish> ");
+        if (isatty(STDIN_FILENO)) printf("wish> ");
         if (getline(&line, &len, stdin) == -1) break;
 
+        // Remove trailing newline
+        if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+
         char **args = tokenize(line);
-        if (args[0] == NULL) { free(args); continue; }
-        if (strcmp(args[0], "exit") == 0) exit(0);
+        if (args[0] == NULL) {
+            free(args);
+            continue;
+        }
 
-        pid_t pid = fork();
-        if (pid == 0) {
-            char p[512]; snprintf(p, 512, "%s/%s", shell_path[0], args[0]);
-            execv(p, args);
-            print_error(); exit(1);
-        } else { wait(NULL); }
-        free(args);
-
-        if (strcmp(args[0], "cd") == 0) {
+        // --- BUILT-INS ---
+        if (strcmp(args[0], "exit") == 0) {
+            if (args[1] != NULL) print_error();
+            else exit(0);
+        }
+        else if (strcmp(args[0], "cd") == 0) {
             if (args[1] == NULL || args[2] != NULL) print_error();
             else if (chdir(args[1]) != 0) print_error();
-            continue;
         }
-        if (strcmp(args[0], "path") == 0) {
-            // Free old path and update with new args[1...n]
-            // ... logic to update shell_path array ...
-            continue;
+        else if (strcmp(args[0], "path") == 0) {
+            // Path update logic will go here in next commit
+        }
+        // --- EXTERNAL COMMANDS ---
+        else {
+            pid_t pid = fork();
+            if (pid == 0) {
+                char p[512];
+                snprintf(p, 512, "%s/%s", shell_path[0], args[0]);
+                execv(p, args);
+                print_error();
+                exit(1);
+            } else {
+                wait(NULL);
+            }
         }
 
-
+        // NOW we free it, after all checks are done
+        free(args);
     }
+    free(line);
     return 0;
 }
