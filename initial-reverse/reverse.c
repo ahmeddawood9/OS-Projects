@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
     // Prevent overwriting the input file with the output file
     if (argc == 3) {
         if (strcmp(argv[1], argv[2]) == 0 || is_same_file(argv[1], argv[2])) {
-            fprintf(stderr, "Input and output file must differ\n"); // Print error if files are identical
+            fprintf(stderr, "reverse: input and output file must differ\n"); // Print error if files are identical
             exit(1); // Exit the program
         }
     }
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 2) {
         in = fopen(argv[1], "r"); // Open the first argument as read-only
         if (in == NULL) {
-            fprintf(stderr, "error: cannot open file '%s'\n", argv[1]); // Report error if file opening fails
+            fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]); // Report error if file opening fails
             exit(1); // Exit the program
         }
     }
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     if (argc == 3) {
         out = fopen(argv[2], "w"); // Open the second argument as write-only
         if (out == NULL) {
-            fprintf(stderr, "error: cannot open file '%s'\n", argv[2]); // Report error if file opening fails
+            fprintf(stderr, "reverse: cannot open file '%s'\n", argv[2]); // Report error if file opening fails
             exit(1); // Exit the program
         }
     }
@@ -63,13 +63,13 @@ int main(int argc, char *argv[]) {
     while ((nread = getline(&buffer, &len, in)) != -1) {
         Node *new_node = malloc(sizeof(Node)); // Allocate memory for a new list node
         if (new_node == NULL) {
-            fprintf(stderr, "malloc failed\n"); // Report allocation failure
+            fprintf(stderr, "reverse: malloc failed\n"); // Report allocation failure
             exit(1); // Exit the program
         }
 
         new_node->line = strdup(buffer); // Duplicate the read string into the node's memory
         if (new_node->line == NULL) {
-            fprintf(stderr, "malloc failed\n"); // Report string duplication failure
+            fprintf(stderr, "reverse: malloc failed\n"); // Report string duplication failure
             exit(1); // Exit the program
         }
 

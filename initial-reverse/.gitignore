@@ -1,0 +1,13 @@
+# Compiled binaries
+reverse
+
+# Object files
+*.o
+
+# Test outputs
+tests-out/
+
+# IDE/System specific
+.DS_Store
+.vscode/
+.idea/
