@@ -1,5 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+// Node for our LIFO linked list (stack)
+typedef struct Node {
+    char *line;
+    struct Node *next;
+} Node;
 
 int main(int argc, char *argv[]) {
     if (argc > 3) {
@@ -29,17 +36,41 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Read data using getline
+    Node *head = NULL;
     char *buffer = NULL;
     size_t len = 0;
     ssize_t nread;
 
+    // Build the stack
     while ((nread = getline(&buffer, &len, in)) != -1) {
-        // Temporarily just print it straight to out
-        fprintf(out, "%s", buffer);
-    }
+        Node *new_node = malloc(sizeof(Node));
+        if (new_node == NULL) {
+            fprintf(stderr, "malloc failed\n");
+            exit(1);
+        }
 
-    free(buffer); // Clean up the buffer allocated by getline
+        new_node->line = strdup(buffer);
+        if (new_node->line == NULL) {
+            fprintf(stderr, "malloc failed\n");
+            exit(1);
+        }
+
+        new_node->next = head;
+        head = new_node;
+    }
+    free(buffer);
+
+    // Print reversed lines and free memory iteratively
+    Node *current = head;
+    while (current != NULL) {
+        fprintf(out, "%s", current->line);
+
+        Node *temp = current;
+        current = current->next;
+
+        free(temp->line);
+        free(temp);
+    }
 
     // Graceful closure
     if (in != stdin) fclose(in);
