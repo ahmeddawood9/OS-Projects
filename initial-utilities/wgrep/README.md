@@ -1,53 +1,48 @@
-# wgrep — A Simple grep-like Utility
+# wgrep - A Simple grep-like Utility
 
-`wgrep` is a small UNIX-style command-line tool written in **C** that mimics the core behavior of `grep`. It searches for a **case-sensitive substring** in text input and prints every line that contains the search term.
+## Project Description and Core Concepts
 
-This project is built for learning **Operating Systems and systems programming fundamentals**.
+`wgrep` is a custom command-line tool written in C that mimics the core functionality of the Unix `grep` utility. It searches for a specific substring within a stream of text and outputs every line that contains a match. This project explores:
 
----
+- **Stream-based Processing:** Efficiently reading lines from both files and standard input (`stdin`).
+- **Dynamic Line Buffering:** Utilizing `getline()` to handle lines of arbitrary length without buffer overflows.
+- **Pattern Matching:** Implementing basic substring search within character arrays.
 
 ## Features
 
-* Case-sensitive substring search
-* Supports **multiple files**
-* Reads from **standard input (stdin)** if no file is provided
-* Handles **arbitrarily long lines** using `getline()`
-* Proper UNIX-style error handling and exit codes
+- **Multi-source Search:** Searches through multiple specified files or reads from `stdin` if no files are provided.
+- **Case-sensitive Matching:** Performs precise substring matching on every line.
+- **Memory Safety:** Dynamically allocates memory for line reading, ensuring robustness against unusually long input.
+- **Error Validation:** Includes checks for missing search terms and inaccessible files.
 
----
+## Compilation/Build Instructions
 
-## Build
+Compile the utility using `gcc`. The `-Werror` flag is recommended to ensure code quality.
 
+To build the executable:
 ```bash
 gcc -Wall -Werror -o wgrep wgrep.c
 ```
 
----
+## Usage Examples
 
-## Usage
-
+### 1. Search in a File
+Find all lines containing "apple" in `fruits.txt`:
 ```bash
-./wgrep searchterm [file ...]
+./wgrep apple fruits.txt
 ```
 
-### Examples
-
+### 2. Search Multiple Files
+Search across several files simultaneously:
 ```bash
-./wgrep foo bar.txt
+./wgrep "error code" log1.txt log2.txt
 ```
 
+### 3. Piping from Stdin
+Filter output from another command:
 ```bash
-cat file.txt | ./wgrep hello
+cat file.txt | ./wgrep "hello"
 ```
 
 ---
-
-## Errors & Exit Codes
-
-* Missing arguments → prints usage message, exits with `1`
-* Cannot open file → prints error message, exits with `1`
-* Successful execution → exits with `0`
-
----
-
-
+*Part of the Operating Systems Projects collection.*

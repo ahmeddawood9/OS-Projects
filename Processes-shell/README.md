@@ -1,33 +1,38 @@
 # WISH - The Wisconsin Shell
 
-WISH (Wisconsin Shell) is a simple Unix command-line interpreter (CLI) developed in C. This project explores the core fundamentals of operating systems, including process creation, memory management, and I/O redirection.
+## Project Description and Core Concepts
+
+WISH (Wisconsin Shell) is a custom Unix-style command-line interpreter (CLI) developed in C. This project serves as a deep dive into the process management and execution model of an Operating System. Key concepts demonstrated include:
+
+- **Process Creation and Control:** Leveraging `fork()`, `execv()`, and `wait()` to manage the lifecycle of child processes.
+- **I/O Redirection:** Implementing the `>` operator to redirect standard output and standard error from the terminal to files.
+- **Path Resolution:** Dynamically searching for executables within a user-defined set of directories.
+- **Parallelism:** Managing multiple concurrent processes using the `&` operator to achieve asynchronous command execution.
 
 ## Features
 
-- **Interactive Mode**: A classic REPL loop providing a `wish>` prompt for real-time command execution.
-- **Batch Mode**: Ability to execute commands from a script file (e.g., `./wish batch.txt`).
-- **Path Searching**: Dynamic search path for executables (defaults to `/bin`).
-- **Built-in Commands**:
-  - `exit`: Safely terminates the shell.
+- **Interactive and Batch Modes:** Supports real-time command entry via a REPL loop or automated execution from a script file.
+- **Built-in Commands:** 
+  - `exit`: Gracefully terminates the shell.
   - `cd`: Changes the current working directory.
-  - `path`: Updates the search path for the shell.
-- **Redirection**: Supports standard output and standard error redirection to files using the `>` operator.
-- **Parallel Execution**: Ability to run multiple commands simultaneously using the `&` operator.
+  - `path`: Configures the search directories for executables.
+- **Output Redirection:** Seamlessly sends command output to files.
+- **Parallel Execution:** Runs multiple commands simultaneously, waiting for all to complete before returning to the prompt.
+- **Robust Parsing:** Handles complex input strings, including whitespace variations and multiple operators.
 
-## Compilation
+## Compilation/Build Instructions
 
-To compile the shell, use the following `gcc` command. It is configured to treat all warnings as errors to ensure high-quality, stable code.
+The shell is designed to be compiled with `gcc` using strict flags to ensure code quality and stability.
 
+To compile the shell:
 ```bash
 gcc wish.c -o wish -Wall -Werror
 ```
 
-## Usage
+## Usage Examples
 
-### Interactive Mode
-
-Run the shell without arguments to enter interactive mode:
-
+### 1. Interactive Mode
+Launch the shell and enter commands at the `wish>` prompt:
 ```bash
 ./wish
 wish> ls -la
@@ -35,34 +40,23 @@ wish> cd /tmp
 wish> exit
 ```
 
-### Batch Mode
-
-Pass a file containing a list of commands to run them sequentially:
-
+### 2. Batch Mode
+Run a script file containing a sequence of commands:
 ```bash
 ./wish script.sh
 ```
 
-### Parallel Commands
-
-Run multiple programs at once:
-
-```bash
-wish> ls & ps & whoami
-```
-
-### Redirection
-
-Send the output of a command to a file:
-
+### 3. Redirection
+Redirect the output of a command to a file:
 ```bash
 wish> ls /usr/bin > output.txt
 ```
 
-## Technical Architecture
+### 4. Parallel Commands
+Execute multiple programs concurrently:
+```bash
+wish> ls & ps & whoami
+```
 
-The shell operates through a cycle of three main stages:
-
-1. **Parsing**: Using `strsep` to tokenize user input and identify operators like `&` and `>`.
-2. **Execution**: Using `fork()` to create child processes and `execv()` to replace the child process image with the target executable.
-3. **Synchronization**: Using `waitpid()` to manage the lifecycle of child processes, ensuring parallel tasks finish before returning control to the user.
+---
+*Part of the Operating Systems Projects collection.*

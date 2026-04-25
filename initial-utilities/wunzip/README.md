@@ -1,58 +1,47 @@
 # wunzip - RLE Decompression Utility
 
-`wunzip` is a custom file decompression tool written in C. It was developed as part of the "initial-utilities" project from the *Operating Systems: Three Easy Pieces* (OSTEP) curriculum.
+## Project Description and Core Concepts
 
-## Description
+`wunzip` is a specialized file decompression tool written in C that reverses Run-Length Encoding (RLE). This project focuses on binary file manipulation and raw data processing, which are critical for understanding how Operating Systems handle non-textual data. Key concepts include:
 
-`wunzip` is the counterpart to `wzip`. It reverses Run-Length Encoding (RLE) compression by reading a binary compressed file and restoring it to its original text format, which is then sent to standard output (`stdout`).
+- **Binary I/O:** Using `fread` to read fixed-width binary structures (4-byte integers and 1-byte characters) rather than line-based text.
+- **Data Deserialization:** Correctly interpreting raw bytes into their original program-level representations.
+- **Lossless Decompression:** Restoring compressed data to its exact original state without data loss.
 
-## How Decompression Works
+## Features
 
-The utility expects the specific binary format used by `wzip`:
-1. **Count (4 bytes):** A binary integer representing the number of times a character is repeated.
-2. **Character (1 byte):** The ASCII character to be repeated.
+- **Efficient RLE Decoding:** Decodes 5-byte chunks (4-byte count + 1-byte char) to reconstruct original text.
+- **Binary Stream Safety:** Correctly handles non-printable characters and binary values that might be mistaken for control characters in text mode.
+- **Multi-file Concatenation:** Seamlessly decompresses multiple files into a single unified output stream.
 
-The tool reads these 5-byte chunks sequentially, printing the character to the terminal the specified number of times until the end of the file is reached.
+## Compilation/Build Instructions
 
-## Implementation Details
+The utility is compiled using `gcc` with standard systems programming flags.
 
-The implementation focuses on safe binary file handling:
-* **Binary Stream Processing:** Since compressed files may contain bytes that represent newlines (`0x0A`) as part of an integer value, standard text-reading functions (like `getline`) cannot be used.
-* **Raw Memory Access:** The tool uses `fread()` to pull raw bytes directly into memory, ensuring that 4-byte integers and 1-byte characters are deserialized correctly regardless of their content.
-* **Multi-file Support:** `wunzip` can process multiple files in a single execution, concatenating the decompressed output seamlessly.
-
-## Compilation
-
-To compile the project with strict error checking, use `gcc`:
-
+To build the executable:
 ```bash
-gcc -o wunzip wunzip.c -Wall -Werror
+gcc -Wall -Werror -o wunzip wunzip.c
 ```
 
-## Usage
+## Usage Examples
 
-### Basic Decompression
-To decompress a file and view the output in the terminal:
+### 1. Basic Decompression
+Decompress a file and view the output in the terminal:
 ```bash
 ./wunzip compressed_file.z
 ```
 
-### Restore Original File
-To decompress and save the result back to a text file:
+### 2. Restore to File
+Decompress a file and save the output to a new text file using redirection:
 ```bash
-./wunzip compressed_file.z > restored.txt
+./wunzip compressed_file.z > original.txt
 ```
 
-### Batch Decompression
-To decompress multiple files sequentially:
+### 3. Batch Processing
+Decompress multiple files in sequence:
 ```bash
-./wunzip file1.z file2.z
+./wunzip file1.z file2.z file3.z
 ```
 
-## Testing
-
-A test script is included to verify the implementation against the OSTEP test suite:
-
-```bash
-./test-wunzip.sh
-```
+---
+*Part of the Operating Systems Projects collection.*
