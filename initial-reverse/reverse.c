@@ -29,6 +29,18 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Read data using getline
+    char *buffer = NULL;
+    size_t len = 0;
+    ssize_t nread;
+
+    while ((nread = getline(&buffer, &len, in)) != -1) {
+        // Temporarily just print it straight to out
+        fprintf(out, "%s", buffer);
+    }
+
+    free(buffer); // Clean up the buffer allocated by getline
+
     // Graceful closure
     if (in != stdin) fclose(in);
     if (out != stdout) fclose(out);
