@@ -118,9 +118,17 @@ int main(int argc, char *argv[]) {
                 printf("%d not found\n", key);
             }
         } else if (strcmp(cmd, "d") == 0) {
-            // delete
+            char *key_str = strsep(&arg, ",");
+            if (key_str == NULL) {
+                printf("bad command\n");
+                continue;
+            }
+            int key = atoi(key_str);
+            if (delete(key) != 0) {
+                printf("%d not found\n", key);
+            }
         } else if (strcmp(cmd, "c") == 0) {
-            // clear
+            clear();
         } else if (strcmp(cmd, "a") == 0) {
             print_all();
         } else {
