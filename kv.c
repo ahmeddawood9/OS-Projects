@@ -105,7 +105,18 @@ int main(int argc, char *argv[]) {
             int key = atoi(key_str);
             put(key, value);
         } else if (strcmp(cmd, "g") == 0) {
-            // get
+            char *key_str = strsep(&arg, ",");
+            if (key_str == NULL) {
+                printf("bad command\n");
+                continue;
+            }
+            int key = atoi(key_str);
+            char *value = get(key);
+            if (value != NULL) {
+                printf("%d,%s\n", key, value);
+            } else {
+                printf("%d not found\n", key);
+            }
         } else if (strcmp(cmd, "d") == 0) {
             // delete
         } else if (strcmp(cmd, "c") == 0) {
