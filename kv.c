@@ -96,7 +96,14 @@ int main(int argc, char *argv[]) {
         }
 
         if (strcmp(cmd, "p") == 0) {
-            // put
+            char *key_str = strsep(&arg, ",");
+            char *value = strsep(&arg, ",");
+            if (key_str == NULL || value == NULL) {
+                printf("bad command\n");
+                continue;
+            }
+            int key = atoi(key_str);
+            put(key, value);
         } else if (strcmp(cmd, "g") == 0) {
             // get
         } else if (strcmp(cmd, "d") == 0) {
@@ -104,7 +111,7 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(cmd, "c") == 0) {
             // clear
         } else if (strcmp(cmd, "a") == 0) {
-            // all
+            print_all();
         } else {
             printf("bad command\n");
         }
