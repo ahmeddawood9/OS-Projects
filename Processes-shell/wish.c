@@ -1,3 +1,11 @@
+/*
+ * WISH: The Wisconsin Shell.
+ * Part of the Operating Systems Projects collection.
+ *
+ * A custom Unix-style command-line interpreter with support for built-in
+ * commands, I/O redirection, and parallel execution.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,4 +1,8 @@
 #!/bin/bash
+# collector.sh: Linux System Resource Collector.
+# Part of the Operating Systems Projects collection.
+#
+# Extracts CPU, memory, and disk metrics from /proc and writes them to data.json.
 
 read cpu user nice system idle iowait irq softirq steal guest guest_nice < /proc/stat
 

@@ -1,3 +1,10 @@
+/*
+ * wunzip: A decompression utility for RLE-encoded files.
+ * Part of the Operating Systems Projects collection.
+ *
+ * Restores files compressed by a matching wzip utility.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 

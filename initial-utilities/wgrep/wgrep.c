@@ -1,3 +1,10 @@
+/*
+ * wgrep: A simple implementation of the Unix 'grep' utility.
+ * Part of the Operating Systems Projects collection.
+ *
+ * Searches for a pattern in files or standard input.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

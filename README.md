@@ -1,35 +1,51 @@
-# Initial KV Store
+# Operating Systems Projects
 
-A simple persistent key-value store implemented in C.
+This repository contains a collection of systems programming projects focusing on core Operating Systems concepts. Each project is implemented in C or Bash and explores fundamental topics such as process management, memory management, file systems, and concurrency.
 
-## Features
+## 📁 Repository Structure
 
-- **Put**: `p,key,value` - Stores a key-value pair.
-- **Get**: `g,key` - Retrieves the value for a given key.
-- **Delete**: `d,key` - Removes a key-value pair.
-- **Clear**: `c` - Removes all key-value pairs.
-- **All**: `a` - Prints all key-value pairs.
-- **Persistence**: Data is stored in `database.txt` and persists across sessions.
+| Project | Description | Key Concepts |
+|:---|:---|:---|
+| **[initial-utilities](./initial-utilities/)** | Reimplementation of `cat`, `grep`, `zip/unzip`. | File I/O, Buffer Management, System Calls. |
+| **[initial-reverse](./initial-reverse/)** | A utility to reverse lines in a file or stream. | Linked Lists, Memory Management, File Metadata (Inodes). |
+| **[initial-kv](./initial-kv/)** | A persistent key-value store. | Data Persistence, Command Parsing, Dynamic Memory. |
+| **[Processes-shell](./Processes-shell/)** | WISH: The Wisconsin Shell. | `fork()`, `exec()`, `wait()`, I/O Redirection, Parallelism. |
+| **[system-monitor](./system-monitor/)** | Real-time Linux resource monitor. | `/proc` filesystem, Kernel state extraction, Visualization. |
+| **[tester](./tester/)** | Shared testing infrastructure. | Automated validation, Regression testing. |
 
-## Compilation
+## 🚀 Getting Started
+
+### Prerequisites
+
+- A Linux environment (recommended) or WSL.
+- GCC compiler (`build-essential`).
+- Bash shell.
+
+### General Build Instructions
+
+Most C-based projects can be compiled using the provided `Makefile` or a simple `gcc` command. For example, to build the `reverse` utility:
 
 ```bash
-gcc -o kv kv.c -Wall -Werror
+cd initial-reverse
+make
 ```
 
-## Usage
+### Running Tests
 
+To verify the implementation of a project, you can use the `tester` scripts. Each project directory typically contains a `tests/` folder or a test script.
+
+Example for `initial-reverse`:
 ```bash
-./kv p,1,hello p,2,world
-./kv g,1
-./kv a
-./kv d,1
-./kv c
+cd initial-reverse
+./test-reverse.sh
 ```
 
-## Implementation Details
+## 🛠 Features
 
-- Uses a **Linked List** for in-memory storage.
-- Parses command-line arguments using `strsep`.
-- Persists data to a plain-text file `database.txt` on exit and loads it on startup.
-- Handles malformed commands gracefully by printing `bad command`.
+- **Standard Compliance:** Adheres to common Unix utility behaviors.
+- **Robustness:** Includes comprehensive error handling for file access, memory allocation, and user input.
+- **Portability:** Designed for POSIX-compliant systems.
+- **Automated Testing:** Integrated with a custom testing framework for reliability.
+
+---
+*Developed as part of an Operating Systems curriculum.*

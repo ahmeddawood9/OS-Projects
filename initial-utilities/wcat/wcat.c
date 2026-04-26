@@ -1,3 +1,10 @@
+/*
+ * wcat: A simple implementation of the Unix 'cat' utility.
+ * Part of the Operating Systems Projects collection.
+ *
+ * Reads files and prints their contents to standard output.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 

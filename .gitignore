@@ -1,4 +1,19 @@
-kv
-database.txt
+# Compiled Binaries
+/initial-kv/kv
+/initial-reverse/reverse
+/Processes-shell/wish
+/initial-utilities/wcat/wcat
+/initial-utilities/wgrep/wgrep
+/initial-utilities/wunzip/wunzip
+
+# Build Artifacts
 *.o
-tests/
+database.txt
+history.log
+data.json
+
+# IDEs and OS
+.vscode/
+.idea/
+.DS_Store
+*.swp

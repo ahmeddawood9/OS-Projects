@@ -1,3 +1,11 @@
+/*
+ * kv.c: A persistent key-value store.
+ * Part of the Operating Systems Projects collection.
+ *
+ * Implements a simple database with Put, Get, Delete, Clear, and All operations.
+ * Data is persisted to 'database.txt' across sessions.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
