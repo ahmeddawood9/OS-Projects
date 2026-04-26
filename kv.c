@@ -122,11 +122,13 @@ int main(int argc, char *argv[]) {
     }
 
     for (int i = 1; i < argc; i++) {
-        char *arg = strdup(argv[i]);
+        char *original_arg = strdup(argv[i]);
+        char *arg = original_arg;
         char *cmd = strsep(&arg, ",");
         
         if (cmd == NULL) {
             printf("bad command\n");
+            free(original_arg);
             continue;
         }
 
@@ -135,32 +137,32 @@ int main(int argc, char *argv[]) {
             char *value = strsep(&arg, ",");
             if (key_str == NULL || value == NULL) {
                 printf("bad command\n");
-                continue;
+            } else {
+                int key = atoi(key_str);
+                put(key, value);
             }
-            int key = atoi(key_str);
-            put(key, value);
         } else if (strcmp(cmd, "g") == 0) {
             char *key_str = strsep(&arg, ",");
             if (key_str == NULL) {
                 printf("bad command\n");
-                continue;
-            }
-            int key = atoi(key_str);
-            char *value = get(key);
-            if (value != NULL) {
-                printf("%d,%s\n", key, value);
             } else {
-                printf("%d not found\n", key);
+                int key = atoi(key_str);
+                char *value = get(key);
+                if (value != NULL) {
+                    printf("%d,%s\n", key, value);
+                } else {
+                    printf("%d not found\n", key);
+                }
             }
         } else if (strcmp(cmd, "d") == 0) {
             char *key_str = strsep(&arg, ",");
             if (key_str == NULL) {
                 printf("bad command\n");
-                continue;
-            }
-            int key = atoi(key_str);
-            if (delete(key) != 0) {
-                printf("%d not found\n", key);
+            } else {
+                int key = atoi(key_str);
+                if (delete(key) != 0) {
+                    printf("%d not found\n", key);
+                }
             }
         } else if (strcmp(cmd, "c") == 0) {
             clear();
@@ -169,7 +171,7 @@ int main(int argc, char *argv[]) {
         } else {
             printf("bad command\n");
         }
-        free(arg);
+        free(original_arg);
     }
 
     save();
