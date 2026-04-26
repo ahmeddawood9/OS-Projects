@@ -81,7 +81,27 @@ void print_all() {
     }
 }
 
+void load() {
+    FILE *fp = fopen("database.txt", "r");
+    if (fp == NULL) {
+        return;
+    }
+    char *line = NULL;
+    size_t len = 0;
+    while (getline(&line, &len, fp) != -1) {
+        char *ptr = line;
+        char *key_str = strsep(&ptr, ",");
+        char *value = strsep(&ptr, "\n");
+        if (key_str != NULL && value != NULL) {
+            put(atoi(key_str), value);
+        }
+    }
+    free(line);
+    fclose(fp);
+}
+
 int main(int argc, char *argv[]) {
+    load();
     if (argc < 2) {
         return 0;
     }
