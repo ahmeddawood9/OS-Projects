@@ -100,9 +100,24 @@ void load() {
     fclose(fp);
 }
 
+void save() {
+    FILE *fp = fopen("database.txt", "w");
+    if (fp == NULL) {
+        perror("fopen");
+        exit(1);
+    }
+    Node *curr = head;
+    while (curr != NULL) {
+        fprintf(fp, "%d,%s\n", curr->key, curr->value);
+        curr = curr->next;
+    }
+    fclose(fp);
+}
+
 int main(int argc, char *argv[]) {
     load();
     if (argc < 2) {
+        save();
         return 0;
     }
 
@@ -157,5 +172,6 @@ int main(int argc, char *argv[]) {
         free(arg);
     }
 
+    save();
     return 0;
 }
