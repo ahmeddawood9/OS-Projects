@@ -1,1 +1,5 @@
-# dummy
+memcached-base64.o: base64.c /usr/include/stdc-predef.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include/stddef.h base64.h
+/usr/include/stdc-predef.h:
+/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include/stddef.h:
+base64.h:
