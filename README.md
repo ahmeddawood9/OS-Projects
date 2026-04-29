@@ -9,6 +9,7 @@ This repository contains a collection of systems programming projects focusing o
 | **[initial-utilities](./initial-utilities/)** | Reimplementation of `cat`, `grep`, `zip/unzip`. | File I/O, Buffer Management, System Calls. |
 | **[initial-reverse](./initial-reverse/)** | A utility to reverse lines in a file or stream. | Linked Lists, Memory Management, File Metadata (Inodes). |
 | **[initial-kv](./initial-kv/)** | A persistent key-value store. | Data Persistence, Command Parsing, Dynamic Memory. |
+| **[initial-memcached](./initial-memcached/)** | Enhancing the `memcached` distributed memory object caching system. | Networked Caching, Hash Tables, Command Parsing. |
 | **[Processes-shell](./Processes-shell/)** | WISH: The Wisconsin Shell. | `fork()`, `exec()`, `wait()`, I/O Redirection, Parallelism. |
 | **[system-monitor](./system-monitor/)** | Real-time Linux resource monitor. | `/proc` filesystem, Kernel state extraction, Visualization. |
 | **[tester](./tester/)** | Shared testing infrastructure. | Automated validation, Regression testing. |
