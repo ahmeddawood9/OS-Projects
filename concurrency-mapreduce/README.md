@@ -88,6 +88,25 @@ the same time. Users don't have to worry about how to parallelize their
 application; rather, they just write `Map()` and `Reduce()` functions and the
 infrastructure does the rest.
 
+## Features
+
+- **Multi-threaded Execution**: Uses a thread pool for mappers and a fixed number of reducer threads.
+- **Custom Partitioning**: Supports user-defined partitioning functions or a default hash-based partitioner.
+- **Intermediate Sorting**: Automatically sorts intermediate keys per partition to ensure ordered reduction.
+- **Memory Management**: Efficiently manages and cleans up memory used for intermediate key-value pairs.
+
+## Build and Usage
+
+To build the library and the wordcount example:
+```bash
+make
+```
+
+To run the wordcount example:
+```bash
+./wordcount file1.txt [file2.txt ...]
+```
+
 ## Code Overview
 
 We give you here the
