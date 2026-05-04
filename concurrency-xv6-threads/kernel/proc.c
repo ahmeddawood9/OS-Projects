@@ -24,6 +24,7 @@ clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack)
   np->pgdir = proc->pgdir;
   np->sz = proc->sz;
   np->parent = proc;
+  np->stack = stack;
   *np->tf = *proc->tf;
 
   // Clear %eax so that clone returns 0 in the child.
