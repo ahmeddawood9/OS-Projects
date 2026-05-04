@@ -10,6 +10,7 @@ This repository contains a collection of systems programming projects focusing o
 | **[initial-reverse](./initial-reverse/)** | A utility to reverse lines in a file or stream. | Linked Lists, Memory Management, File Metadata (Inodes). |
 | **[initial-kv](./initial-kv/)** | A persistent key-value store. | Data Persistence, Command Parsing, Dynamic Memory. |
 | **[concurrency-mapreduce](./concurrency-mapreduce/)** | A multi-threaded MapReduce framework. | Thread Pools, Mutexes, Partitioning, Sorting. |
+| **[concurrency-xv6-threads](./concurrency-xv6-threads/)** | Implementing kernel threads in xv6. | `clone()`, `join()`, Ticket Locks, Thread Libraries. |
 | **[concurrency-webserver](./concurrency-webserver/)** | A concurrent HTTP web server. | Thread Pooling, Scheduling, Sockets. |
 | **[initial-memcached](./initial-memcached/)** | Enhancing the `memcached` system. | Networked Caching, Hash Tables, Command Parsing. |
 | **[Processes-shell](./Processes-shell/)** | WISH: The Wisconsin Shell. | `fork()`, `exec()`, `wait()`, I/O Redirection, Parallelism. |
