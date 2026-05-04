@@ -36,3 +36,24 @@ thread_join()
   }
   return pid;
 }
+
+void
+lock_init(lock_t *lock)
+{
+  lock->ticket = 0;
+  lock->turn = 0;
+}
+
+void
+lock_acquire(lock_t *lock)
+{
+  int myturn = xadd(&lock->ticket, 1);
+  while(lock->turn != myturn)
+    ; // spin
+}
+
+void
+lock_release(lock_t *lock)
+{
+  xadd(&lock->turn, 1);
+}

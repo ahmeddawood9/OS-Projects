@@ -28,6 +28,16 @@ int uptime(void);
 int clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack);
 int join(void **stack);
 
+// ticket lock
+typedef struct {
+  int ticket;
+  int turn;
+} lock_t;
+
+void lock_init(lock_t *);
+void lock_acquire(lock_t *);
+void lock_release(lock_t *);
+
 // ulib.c
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);
