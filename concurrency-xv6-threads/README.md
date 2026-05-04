@@ -127,6 +127,31 @@ Chapter 3) and the details of call/return. All of this will be useful in
 getting `clone()` above to set things up properly on the user stack of the
 child thread.
 
+## Implementation Details
+
+### Features
+- **Kernel-Level Threads**: Full implementation of `clone()` and `join()` system calls.
+- **Shared Address Space**: Threads within the same process share the same page directory and memory.
+- **Thread Library**: High-level `thread_create()` and `thread_join()` functions in `ulib.c`.
+- **Ticket Locks**: Spinlocks implemented with atomic x86 fetch-and-add for synchronization.
+- **Thread-Safe Heap**: Synchronized `sbrk()` to prevent race conditions during memory allocation.
+
+### System Calls
+- `int clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack)`
+- `int join(void **stack)`
+
+### Synchronization
+```c
+typedef struct {
+  int ticket;
+  int turn;
+} lock_t;
+
+void lock_init(lock_t *);
+void lock_acquire(lock_t *);
+void lock_release(lock_t *);
+```
+
 
 
 
