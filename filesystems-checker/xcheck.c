@@ -301,7 +301,29 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Check 9: For all inodes marked in use, each must be referred to in at least one directory.
+    // Contest Check 2: Every directory traces back to the root directory.
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type != T_DIR) continue;
+        if (i == ROOTINO) continue;
+
+        int curr = i;
+        int visited_in_trace[sb->ninodes];
+        memset(visited_in_trace, 0, sb->ninodes * sizeof(int));
+        
+        while (curr != ROOTINO) {
+            if (visited_in_trace[curr]) {
+                fprintf(stderr, "ERROR: inaccessible directory exists.\n");
+                exit(1);
+            }
+            visited_in_trace[curr] = 1;
+            curr = parent_inode[curr];
+            if (curr == 0) {
+                // This shouldn't happen if Check 9 passed, but for safety:
+                fprintf(stderr, "ERROR: inaccessible directory exists.\n");
+                exit(1);
+            }
+        }
+    }
     // Check 10: For each inode number that is referred to in a valid directory, it is actually marked in use.
     // Check 11: Reference counts (number of links) match.
     // Check 12: No extra links for directories.
