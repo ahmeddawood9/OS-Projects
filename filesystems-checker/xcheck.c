@@ -32,5 +32,15 @@ int main(int argc, char *argv[]) {
     // Basic setup complete
     struct superblock *sb = (struct superblock *)(img_ptr + BSIZE);
 
+    struct dinode *dip = (struct dinode *)(img_ptr + (sb->inodestart * BSIZE));
+
+    // Check 1: Each inode is either unallocated or one of the valid types
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type != 0 && dip[i].type != T_FILE && dip[i].type != T_DIR && dip[i].type != T_DEV) {
+            fprintf(stderr, "ERROR: bad inode.\n");
+            exit(1);
+        }
+    }
+
     return 0;
 }
