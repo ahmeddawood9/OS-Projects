@@ -161,5 +161,66 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    int *usage_count = calloc(sb->size, sizeof(int));
+    if (!usage_count) {
+        perror("calloc");
+        exit(1);
+    }
+
+    // Identify which blocks are used by inodes and catch duplicates (Checks 7 & 8)
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type == 0) continue;
+
+        for (int j = 0; j < NDIRECT; j++) {
+            uint addr = dip[i].addrs[j];
+            if (addr == 0) continue;
+            if (usage_count[addr] > 0) {
+                fprintf(stderr, "ERROR: direct address used more than once.\n");
+                exit(1);
+            }
+            usage_count[addr]++;
+        }
+
+        uint indirect_addr = dip[i].addrs[NDIRECT];
+        if (indirect_addr != 0) {
+            if (usage_count[indirect_addr] > 0) {
+                // If the indirect block itself is used multiple times.
+                // It's technically an address in an inode. 
+                // Let's treat it as a direct address for the sake of the error message 
+                // if it's in the inode's addrs array.
+                fprintf(stderr, "ERROR: direct address used more than once.\n");
+                exit(1);
+            }
+            usage_count[indirect_addr]++;
+
+            uint *indirect_blocks = (uint *)(img_ptr + (indirect_addr * BSIZE));
+            for (int j = 0; j < NINDIRECT; j++) {
+                uint addr = indirect_blocks[j];
+                if (addr == 0) continue;
+                if (usage_count[addr] > 0) {
+                    fprintf(stderr, "ERROR: indirect address used more than once.\n");
+                    exit(1);
+                }
+                usage_count[addr]++;
+            }
+        }
+    }
+
+    // Check 5 & 6: Bitmap consistency
+    void *bmap = img_ptr + (sb->bmapstart * BSIZE);
+    for (uint b = 0; b < sb->size; b++) {
+        int bit = (*((char*)bmap + (b/8)) >> (b%8)) & 0x1;
+        
+        if (usage_count[b] > 0 && bit == 0) {
+            fprintf(stderr, "ERROR: address used by inode but marked free in bitmap.\n");
+            exit(1);
+        }
+        
+        if (bit == 1 && usage_count[b] == 0 && b >= data_start) {
+            fprintf(stderr, "ERROR: bitmap marks block in use but it is not in use.\n");
+            exit(1);
+        }
+    }
+
     return 0;
 }
