@@ -118,5 +118,48 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // Check 4: Each directory contains . and .. entries, and the . entry points to the directory itself.
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type != T_DIR) continue;
+
+        int found_dot = 0;
+        int found_dot_dot = 0;
+
+        for (int j = 0; j < NDIRECT; j++) {
+            uint addr = dip[i].addrs[j];
+            if (addr == 0) continue;
+            struct dirent *de = (struct dirent *)(img_ptr + (addr * BSIZE));
+            for (int k = 0; k < BSIZE / sizeof(struct dirent); k++) {
+                if (strcmp(de[k].name, ".") == 0) {
+                    if (de[k].inum == i) found_dot = 1;
+                }
+                if (strcmp(de[k].name, "..") == 0) {
+                    found_dot_dot = 1;
+                }
+            }
+        }
+        // Check indirect for completeness (though . and .. are always in the first block)
+        if ((!found_dot || !found_dot_dot) && dip[i].addrs[NDIRECT] != 0) {
+            uint *indirect_blocks = (uint *)(img_ptr + (dip[i].addrs[NDIRECT] * BSIZE));
+            for (int j = 0; j < NINDIRECT; j++) {
+                if (indirect_blocks[j] == 0) continue;
+                struct dirent *de = (struct dirent *)(img_ptr + (indirect_blocks[j] * BSIZE));
+                for (int k = 0; k < BSIZE / sizeof(struct dirent); k++) {
+                    if (strcmp(de[k].name, ".") == 0) {
+                        if (de[k].inum == i) found_dot = 1;
+                    }
+                    if (strcmp(de[k].name, "..") == 0) {
+                        found_dot_dot = 1;
+                    }
+                }
+            }
+        }
+
+        if (!found_dot || !found_dot_dot) {
+            fprintf(stderr, "ERROR: directory not properly formatted.\n");
+            exit(1);
+        }
+    }
+
     return 0;
 }
