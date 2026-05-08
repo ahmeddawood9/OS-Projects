@@ -435,5 +435,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    free(usage_count);
+    free(inode_ref_count);
+    free(parent_inode);
+    munmap(img_ptr, sbuf.st_size);
+    close(fd);
+
     return 0;
 }
