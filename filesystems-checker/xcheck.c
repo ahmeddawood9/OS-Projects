@@ -228,11 +228,18 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    // Identify which inodes are referred to in directories
+    // Identify which inodes are referred to in directories and check parent mismatch
+    int *parent_inode = calloc(sb->ninodes, sizeof(int));
+    if (!parent_inode) {
+        perror("calloc");
+        exit(1);
+    }
+    // Root's parent is root
+    parent_inode[ROOTINO] = ROOTINO;
+
     for (int i = 0; i < sb->ninodes; i++) {
         if (dip[i].type != T_DIR) continue;
 
-        // Iterate through all entries in this directory
         for (int j = 0; j < NDIRECT; j++) {
             uint addr = dip[i].addrs[j];
             if (addr == 0) continue;
@@ -243,6 +250,9 @@ int main(int argc, char *argv[]) {
                     continue;
                 }
                 inode_ref_count[de[k].inum]++;
+                if (dip[de[k].inum].type == T_DIR) {
+                    parent_inode[de[k].inum] = i;
+                }
             }
         }
         if (dip[i].addrs[NDIRECT] != 0) {
@@ -256,7 +266,37 @@ int main(int argc, char *argv[]) {
                         continue;
                     }
                     inode_ref_count[de[k].inum]++;
+                    if (dip[de[k].inum].type == T_DIR) {
+                        parent_inode[de[k].inum] = i;
+                    }
                 }
+            }
+        }
+    }
+
+    // Now check .. for each directory
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type != T_DIR) continue;
+        
+        int found_dot_dot_inum = -1;
+        for (int j = 0; j < NDIRECT; j++) {
+            uint addr = dip[i].addrs[j];
+            if (addr == 0) continue;
+            struct dirent *de = (struct dirent *)(img_ptr + (addr * BSIZE));
+            for (int k = 0; k < BSIZE / sizeof(struct dirent); k++) {
+                if (strcmp(de[k].name, "..") == 0) {
+                    found_dot_dot_inum = de[k].inum;
+                    break;
+                }
+            }
+            if (found_dot_dot_inum != -1) break;
+        }
+        // ... indirect ... (omitted for brevity in dot/dot-dot as they are usually first)
+        
+        if (found_dot_dot_inum != -1 && parent_inode[i] != 0) {
+            if (found_dot_dot_inum != parent_inode[i]) {
+                fprintf(stderr, "ERROR: parent directory mismatch.\n");
+                exit(1);
             }
         }
     }
