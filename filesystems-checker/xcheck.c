@@ -77,5 +77,46 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Check 3: Root directory exists, its inode number is 1, and the parent of the root directory is itself.
+    if (dip[ROOTINO].type != T_DIR) {
+        fprintf(stderr, "ERROR: root directory does not exist.\n");
+        exit(1);
+    }
+
+    int found_root_parent = 0;
+    for (int j = 0; j < NDIRECT; j++) {
+        uint addr = dip[ROOTINO].addrs[j];
+        if (addr == 0) continue;
+        struct dirent *de = (struct dirent *)(img_ptr + (addr * BSIZE));
+        for (int k = 0; k < BSIZE / sizeof(struct dirent); k++) {
+            if (strcmp(de[k].name, "..") == 0) {
+                if (de[k].inum == ROOTINO) {
+                    found_root_parent = 1;
+                }
+            }
+        }
+    }
+    // Also check indirect if not found in direct? Normally root is small.
+    // For completeness, we should.
+    if (!found_root_parent && dip[ROOTINO].addrs[NDIRECT] != 0) {
+        uint *indirect_blocks = (uint *)(img_ptr + (dip[ROOTINO].addrs[NDIRECT] * BSIZE));
+        for (int j = 0; j < NINDIRECT; j++) {
+            if (indirect_blocks[j] == 0) continue;
+            struct dirent *de = (struct dirent *)(img_ptr + (indirect_blocks[j] * BSIZE));
+            for (int k = 0; k < BSIZE / sizeof(struct dirent); k++) {
+                if (strcmp(de[k].name, "..") == 0) {
+                    if (de[k].inum == ROOTINO) {
+                        found_root_parent = 1;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!found_root_parent) {
+        fprintf(stderr, "ERROR: root directory does not exist.\n");
+        exit(1);
+    }
+
     return 0;
 }
