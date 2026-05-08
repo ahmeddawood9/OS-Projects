@@ -42,5 +42,40 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    uint data_start = sb->bmapstart + (sb->size / BPB) + 1;
+
+    // Check 2: Valid block addresses
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type == 0) continue;
+
+        // Direct blocks
+        for (int j = 0; j < NDIRECT; j++) {
+            uint addr = dip[i].addrs[j];
+            if (addr == 0) continue;
+            if (addr < data_start || addr >= sb->size) {
+                fprintf(stderr, "ERROR: bad direct address in inode.\n");
+                exit(1);
+            }
+        }
+
+        // Indirect block
+        uint indirect_addr = dip[i].addrs[NDIRECT];
+        if (indirect_addr != 0) {
+            if (indirect_addr < data_start || indirect_addr >= sb->size) {
+                fprintf(stderr, "ERROR: bad indirect address in inode.\n");
+                exit(1);
+            }
+            uint *indirect_blocks = (uint *)(img_ptr + (indirect_addr * BSIZE));
+            for (int j = 0; j < NINDIRECT; j++) {
+                uint addr = indirect_blocks[j];
+                if (addr == 0) continue;
+                if (addr < data_start || addr >= sb->size) {
+                    fprintf(stderr, "ERROR: bad indirect address in inode.\n");
+                    exit(1);
+                }
+            }
+        }
+    }
+
     return 0;
 }
