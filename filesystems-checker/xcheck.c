@@ -352,14 +352,65 @@ int main(int argc, char *argv[]) {
     // Let's re-read Check 9: "For all inodes marked in use, each must be referred to in at least one directory."
     // This includes the root.
     
-    inode_ref_count[ROOTINO]++; // Special case root if we don't count its own . or ..
+    // Repair Mode: link lost inodes to lost_found
+    if (repair_mode) {
+        int lost_found_inum = -1;
+        // Search root for lost_found
+        for (int j = 0; j < NDIRECT; j++) {
+            uint addr = dip[ROOTINO].addrs[j];
+            if (addr == 0) continue;
+            struct dirent *de = (struct dirent *)(img_ptr + (addr * BSIZE));
+            for (int k = 0; k < BSIZE / sizeof(struct dirent); k++) {
+                if (strcmp(de[k].name, "lost_found") == 0) {
+                    lost_found_inum = de[k].inum;
+                    break;
+                }
+            }
+            if (lost_found_inum != -1) break;
+        }
+        
+        if (lost_found_inum == -1) {
+            // Requirement says it will be there, but just in case
+            fprintf(stderr, "ERROR: lost_found directory not found in root.\n");
+            exit(1);
+        }
+
+        struct dinode *lf_dip = &dip[lost_found_inum];
+        
+        for (int i = 0; i < sb->ninodes; i++) {
+            if (dip[i].type != 0 && inode_ref_count[i] == 0 && i != ROOTINO) {
+                // This is a lost inode. Link it to lost_found.
+                int linked = 0;
+                for (int j = 0; j < NDIRECT; j++) {
+                    if (lf_dip->addrs[j] == 0) continue; // Should probably allocate a block if full, but assignment says it's there
+                    struct dirent *de = (struct dirent *)(img_ptr + (lf_dip->addrs[j] * BSIZE));
+                    for (int k = 0; k < BSIZE / sizeof(struct dirent); k++) {
+                        if (de[k].inum == 0) {
+                            de[k].inum = i;
+                            sprintf(de[k].name, "%d", i);
+                            linked = 1;
+                            break;
+                        }
+                    }
+                    if (linked) break;
+                }
+                if (linked) {
+                    inode_ref_count[i]++;
+                    // Update nlink if necessary? Usually it should match what's in the inode.
+                    // If we just added a link, and it was 1 before but had 0 refs, now it has 1 ref.
+                }
+            }
+        }
+    }
 
     for (int i = 0; i < sb->ninodes; i++) {
         if (dip[i].type != 0) {
             // In use
             if (inode_ref_count[i] == 0) {
-                fprintf(stderr, "ERROR: inode marked use but not found in a directory.\n");
-                exit(1);
+                if (!repair_mode) {
+                    fprintf(stderr, "ERROR: inode marked use but not found in a directory.\n");
+                    exit(1);
+                }
             }
             
             if (dip[i].type == T_FILE) {
