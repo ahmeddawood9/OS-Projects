@@ -222,5 +222,96 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    int *inode_ref_count = calloc(sb->ninodes, sizeof(int));
+    if (!inode_ref_count) {
+        perror("calloc");
+        exit(1);
+    }
+
+    // Identify which inodes are referred to in directories
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type != T_DIR) continue;
+
+        // Iterate through all entries in this directory
+        for (int j = 0; j < NDIRECT; j++) {
+            uint addr = dip[i].addrs[j];
+            if (addr == 0) continue;
+            struct dirent *de = (struct dirent *)(img_ptr + (addr * BSIZE));
+            for (int k = 0; k < BSIZE / sizeof(struct dirent); k++) {
+                if (de[k].inum == 0) continue;
+                if (strcmp(de[k].name, ".") == 0 || strcmp(de[k].name, "..") == 0) {
+                    continue;
+                }
+                inode_ref_count[de[k].inum]++;
+            }
+        }
+        if (dip[i].addrs[NDIRECT] != 0) {
+            uint *indirect_blocks = (uint *)(img_ptr + (dip[i].addrs[NDIRECT] * BSIZE));
+            for (int j = 0; j < NINDIRECT; j++) {
+                if (indirect_blocks[j] == 0) continue;
+                struct dirent *de = (struct dirent *)(img_ptr + (indirect_blocks[j] * BSIZE));
+                for (int k = 0; k < BSIZE / sizeof(struct dirent); k++) {
+                    if (de[k].inum == 0) continue;
+                    if (strcmp(de[k].name, ".") == 0 || strcmp(de[k].name, "..") == 0) {
+                        continue;
+                    }
+                    inode_ref_count[de[k].inum]++;
+                }
+            }
+        }
+    }
+
+    // Check 9: For all inodes marked in use, each must be referred to in at least one directory.
+    // Check 10: For each inode number that is referred to in a valid directory, it is actually marked in use.
+    // Check 11: Reference counts (number of links) match.
+    // Check 12: No extra links for directories.
+    
+    // In xv6, ROOTINO is referred to by nothing (it's the root).
+    // Wait, Check 3 says parent of root is root. 
+    // So ".." in root points to root.
+    // My loop above skipped "." and "..".
+    // So ROOTINO will have ref_count 0.
+    // I should probably special case ROOTINO or count ".." if it's not root.
+    
+    // Actually, Check 9 says "each must be referred to in at least one directory".
+    // Root is referred to by itself via ".." and ".".
+    // If I count those, ROOTINO will have ref_count 2.
+    // But other directories also have "." and "..".
+    
+    // Let's re-read Check 9: "For all inodes marked in use, each must be referred to in at least one directory."
+    // This includes the root.
+    
+    inode_ref_count[ROOTINO]++; // Special case root if we don't count its own . or ..
+
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type != 0) {
+            // In use
+            if (inode_ref_count[i] == 0) {
+                fprintf(stderr, "ERROR: inode marked use but not found in a directory.\n");
+                exit(1);
+            }
+            
+            if (dip[i].type == T_FILE) {
+                if (dip[i].nlink != inode_ref_count[i]) {
+                    fprintf(stderr, "ERROR: bad reference count for file.\n");
+                    exit(1);
+                }
+            }
+            
+            if (dip[i].type == T_DIR) {
+                if (inode_ref_count[i] > 1 && i != ROOTINO) {
+                    fprintf(stderr, "ERROR: directory appears more than once in file system.\n");
+                    exit(1);
+                }
+            }
+        } else {
+            // Not in use
+            if (inode_ref_count[i] > 0) {
+                fprintf(stderr, "ERROR: inode referred to in directory but marked free.\n");
+                exit(1);
+            }
+        }
+    }
+
     return 0;
 }
