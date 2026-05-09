@@ -305,6 +305,7 @@ int main(int argc, char *argv[]) {
                 case MFS_UNLINK_MSG: {
                     inode_t pinode;
                     get_inode(msg.pinum, &pinode);
+                    int found = 0;
                     if (msg.pinum >= 0 && msg.pinum < MAX_INODES && imap[msg.pinum] != -1 && pinode.type == MFS_DIRECTORY) {
                         for (int i = 0; i < 14; i++) {
                             if (pinode.pointers[i] != -1) {
@@ -313,12 +314,12 @@ int main(int argc, char *argv[]) {
                                 read(fs_fd, entries, MFS_BLOCK_SIZE);
                                 for (int j = 0; j < MFS_BLOCK_SIZE / sizeof(MFS_DirEnt_t); j++) {
                                     if (entries[j].inum != -1 && strcmp(entries[j].name, msg.name) == 0) {
+                                        found = 1;
                                         int inum_to_del = entries[j].inum;
                                         inode_t inode_to_del;
                                         get_inode(inum_to_del, &inode_to_del);
                                         
                                         if (inode_to_del.type == MFS_DIRECTORY) {
-                                            // Check if empty
                                             int count = 0;
                                             for (int k = 0; k < 14; k++) {
                                                 if (inode_to_del.pointers[k] != -1) {
@@ -338,7 +339,6 @@ int main(int argc, char *argv[]) {
                                             }
                                         }
                                         
-                                        // Unlink
                                         entries[j].inum = -1;
                                         int data_pos;
                                         write_to_log(entries, MFS_BLOCK_SIZE, &data_pos);
@@ -348,7 +348,7 @@ int main(int argc, char *argv[]) {
                                         write_to_log(&pinode, sizeof(inode_t), &pinode_pos);
                                         update_imap(msg.pinum, pinode_pos);
                                         
-                                        imap[inum_to_del] = -1; // Mark as free
+                                        imap[inum_to_del] = -1;
                                         int piece_idx = inum_to_del / 16;
                                         imap_piece_t piece;
                                         memcpy(piece.inode_ptrs, &imap[piece_idx * 16], sizeof(imap_piece_t));
@@ -359,15 +359,14 @@ int main(int argc, char *argv[]) {
                                         lseek(fs_fd, 0, SEEK_SET);
                                         write(fs_fd, &cr, sizeof(checkpoint_region_t));
                                         fsync(fs_fd);
-                                        
                                         reply.rc = 0;
                                         break;
                                     }
                                 }
                             }
-                            if (reply.rc != -1) break;
+                            if (found) break;
                         }
-                        if (reply.rc == -1) reply.rc = 0; // Not found is not a failure
+                        if (!found) reply.rc = 0; 
                     }
                     break;
                 }
