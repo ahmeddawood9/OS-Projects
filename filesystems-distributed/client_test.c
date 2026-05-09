@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include "mfs.h"
 
@@ -43,6 +44,26 @@ int main() {
     printf("Looking up '.' in 'subdir'...\n");
     int dot_inum = MFS_Lookup(sub_inum, ".");
     assert(dot_inum == sub_inum);
+
+    printf("Testing MFS_Unlink on 'test.txt'...\n");
+    rc = MFS_Unlink(0, "test.txt");
+    assert(rc == 0);
+    inum = MFS_Lookup(0, "test.txt");
+    assert(inum == -1);
+
+    printf("Testing MFS_Unlink on non-empty directory 'subdir' (should fail)...\n");
+    rc = MFS_Creat(sub_inum, MFS_REGULAR_FILE, "inner.txt");
+    assert(rc == 0);
+    rc = MFS_Unlink(0, "subdir");
+    assert(rc == -1);
+
+    printf("Testing MFS_Unlink on empty directory 'subdir' (after inner unlink)...\n");
+    rc = MFS_Unlink(sub_inum, "inner.txt");
+    assert(rc == 0);
+    rc = MFS_Unlink(0, "subdir");
+    assert(rc == 0);
+    sub_inum = MFS_Lookup(0, "subdir");
+    assert(sub_inum == -1);
 
     printf("Shutting down server...\n");
     rc = MFS_Shutdown();
