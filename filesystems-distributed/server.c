@@ -8,6 +8,8 @@
 #include "udp.h"
 #include "mfs.h"
 
+#include "mfs_proto.h"
+
 #define MAX_INODES 4096
 #define IMAP_PIECES (MAX_INODES / 16)
 
@@ -25,35 +27,6 @@ typedef struct {
     int size;
     int pointers[14];
 } inode_t;
-
-// Request structure for UDP communication
-typedef enum {
-    MFS_LOOKUP,
-    MFS_STAT,
-    MFS_WRITE,
-    MFS_READ,
-    MFS_CREAT,
-    MFS_UNLINK,
-    MFS_SHUTDOWN
-} mfs_msg_type_t;
-
-typedef struct {
-    mfs_msg_type_t type;
-    int pinum;
-    int inum;
-    int block;
-    char name[28];
-    char buffer[MFS_BLOCK_SIZE];
-    int mfs_type; // For MFS_Creat
-} mfs_msg_t;
-
-// Response structure
-typedef struct {
-    int rc;
-    int inum;
-    MFS_Stat_t stat;
-    char buffer[MFS_BLOCK_SIZE];
-} mfs_reply_t;
 
 checkpoint_region_t cr;
 int fs_fd;
@@ -165,7 +138,7 @@ int main(int argc, char *argv[]) {
             reply.rc = -1;
 
             switch (msg.type) {
-                case MFS_LOOKUP: {
+                case MFS_LOOKUP_MSG: {
                     inode_t pinode;
                     get_inode(msg.pinum, &pinode);
                     if (pinode.type == MFS_DIRECTORY) {
@@ -186,7 +159,7 @@ int main(int argc, char *argv[]) {
                     }
                     break;
                 }
-                case MFS_STAT: {
+                case MFS_STAT_MSG: {
                     inode_t inode;
                     get_inode(msg.inum, &inode);
                     if (msg.inum >= 0 && msg.inum < MAX_INODES && imap[msg.inum] != -1) {
@@ -196,7 +169,7 @@ int main(int argc, char *argv[]) {
                     }
                     break;
                 }
-                case MFS_WRITE: {
+                case MFS_WRITE_MSG: {
                     inode_t inode;
                     get_inode(msg.inum, &inode);
                     if (msg.inum >= 0 && msg.inum < MAX_INODES && imap[msg.inum] != -1 && inode.type == MFS_REGULAR_FILE && msg.block >= 0 && msg.block < 14) {
@@ -216,7 +189,7 @@ int main(int argc, char *argv[]) {
                     }
                     break;
                 }
-                case MFS_READ: {
+                case MFS_READ_MSG: {
                     inode_t inode;
                     get_inode(msg.inum, &inode);
                     if (msg.inum >= 0 && msg.inum < MAX_INODES && imap[msg.inum] != -1 && msg.block >= 0 && msg.block < 14) {
@@ -230,7 +203,7 @@ int main(int argc, char *argv[]) {
                     }
                     break;
                 }
-                case MFS_CREAT: {
+                case MFS_CREAT_MSG: {
                     inode_t pinode;
                     get_inode(msg.pinum, &pinode);
                     if (msg.pinum >= 0 && msg.pinum < MAX_INODES && imap[msg.pinum] != -1 && pinode.type == MFS_DIRECTORY) {
@@ -329,7 +302,7 @@ int main(int argc, char *argv[]) {
                     }
                     break;
                 }
-                case MFS_UNLINK: {
+                case MFS_UNLINK_MSG: {
                     inode_t pinode;
                     get_inode(msg.pinum, &pinode);
                     if (msg.pinum >= 0 && msg.pinum < MAX_INODES && imap[msg.pinum] != -1 && pinode.type == MFS_DIRECTORY) {
@@ -398,13 +371,13 @@ int main(int argc, char *argv[]) {
                     }
                     break;
                 }
-                case MFS_SHUTDOWN:
+                case MFS_SHUTDOWN_MSG: {
                     fsync(fs_fd);
                     reply.rc = 0;
                     UDP_Write(sd, &addr, (char *)&reply, sizeof(mfs_reply_t));
                     close(fs_fd);
                     exit(0);
-                default:
+                }                default:
                     break;
             }
             UDP_Write(sd, &addr, (char *)&reply, sizeof(mfs_reply_t));
